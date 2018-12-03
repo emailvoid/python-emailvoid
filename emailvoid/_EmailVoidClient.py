@@ -31,7 +31,12 @@ class EmailVoidClient(object):
         result = "http://{host}:{port}{path}".format(host=self._host, port=self._port, path=endpoint)
         return result
 
-    def _make_request(self, endpoint, params, raw=False):
+    def _make_request(self, endpoint, params=None, raw=False):
+        """ Make request
+        """
+        if params is None:
+            params = {}
+        #
         headers = {
             'X-Auth': self._apikey,
         }
@@ -56,31 +61,42 @@ class EmailVoidClient(object):
             result = values # TODO - receive from `records` area
         return result
 
-    def msg_count(self, mailbox=None):
-        params = {
-            'local': mailbox
-        }
-        res = self._make_request(endpoint="/api/2.0/msg/count", params=params)
-        result = res.get('count')
+    def msg_count(self, domain):
+        """ Receive message count for domain
+
+        @param str domain: domain name
+        """
+        resp = self._make_request(endpoint="/api/3.0/domain/{domain}/msgs/count".format(domain=domain))
+        result = resp.get('count')
         return result
 
 
-    def msg_search(self, mailbox):
-        params = {
-            'local': mailbox,
-        }
-        res = self._make_request(endpoint="/api/2.0/msg/search", params=params)
-        records = res.get('records')
+    def msg_search(self, domain, raw=False):
+        """ Search messages
+
+        @param str domain: domain name
+        @param bool raw: using raw response without wrap in OOP message type
+        """
+        resp = self._make_request(endpoint="/api/3.0/domain/{domain}/msgs/search".format(domain=domain))
+        records = resp.get('records')
         #
-        result = []
-        for record in records:
-            m = EmailVoidMessage(**record)
-            result.append(m)
+        if raw:
+            result = records
+        else:
+            result = []
+            for record in records:
+                m = EmailVoidMessage(**record)
+                result.append(m)
+        #
         return result
 
 
-    def msg_content(self, msgid):
-        endpoint = "/api/2.0/msg/{msgid}/content".format(msgid=msgid)
-        params = {}
-        res = self._make_request(endpoint=endpoint, params=params, raw=True)
-        return res
+    def msg_content(self, domain, msgid):
+        """ Fetch message body
+
+        @param str domain: 
+        @param str msgid:
+        """
+        endpoint = "/api/3.0/domain/{domain}/msg/{msgid}/content".format(domain=domain, msgid=msgid)
+        resp = self._make_request(endpoint=endpoint, raw=True)
+        return resp

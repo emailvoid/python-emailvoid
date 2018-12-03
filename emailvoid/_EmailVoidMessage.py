@@ -26,4 +26,4 @@ class EmailVoidMessage(object):
         return self._msgid
 
     def __repr__(self):
-        return "<EmailVoidMessage msgid={msgid!r} created_at={created_at!r}>".format(msgid=self._msgid, created_at=self._created_at)
+        return "<EmailVoidMessage msgid={msgid!r} local={local!r} domain={domain!r} created_at={created_at!r}>".format(msgid=self._msgid, local=self._local, domain=self._domain, created_at=self._created_at)
